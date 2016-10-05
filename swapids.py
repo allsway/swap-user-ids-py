@@ -8,20 +8,17 @@ import ConfigParser
 import xml.etree.ElementTree as ET
 
 def addidentifier(xml,primary_id,new_id_type):
-	ids = xml.find("user_identifiers")
-	id = ET.Element("user_identifier", {"segment_type", "External"})
-	ids.append(id)
-	id_type = ET.Element('id_type', {'desc', 'Additional ID 2'})
+	ids = xml.findall("user_identifiers")[0]
+	id = ET.Element("user_identifier")
+	id.set("segment_type","External")
+	id_type = ET.SubElement(id,"id_type")
 	id_type.text = new_id_type
-	value = ET.Element('value')
+	id_type.set('desc','Additional ID 3')
+	value = ET.SubElement(id,"value")
 	value.text = primary_id
-	status = ET.Element('status')
-	status.text = 'ACTIVE'
-	id.append(id_type)
-	id.append(value)
-	id.append(status)
-	#ids.append(id)
-#	print ET.tostring(id)
+	status = ET.SubElement(id,"status")
+	status.text = "ACTIVE"
+	ids.append(id)
 	return xml
  
 
@@ -70,7 +67,7 @@ for i in range(0,int(total_patrons)):
 			if swap:
 				#put
 				headers = {"Content-Type": "application/xml"}
-			#	r = requests.put(user_url,data=ET.tostring(patron),headers=headers)
+				r = requests.put(user_url,data=ET.tostring(patron),headers=headers)
 			#	print r.content
 				logging.info('Removed old id:' + primary_id + ', new primary: ' + new_primary)
 				#get
@@ -78,24 +75,16 @@ for i in range(0,int(total_patrons)):
 				updated_user = ET.fromstring(response.content)
 				updated_user.find('primary_id').text = new_primary
 				#put
-			#	r = requests.put(user_url,data=ET.tostring(updated_user),headers=headers)
+				r = requests.put(user_url,data=ET.tostring(updated_user),headers=headers)
 			#	print r.content
 				
 				#get 
 				new_url = baseurl + '/almaws/v1/users/' + new_primary + '?apikey=' + apikey;
-			#	response = requests.get(new_url)
+				response = requests.get(new_url)
 				final_user = ET.fromstring(response.content)
-			#	final = addidentifier(final_user,primary_id,new_id_type)
-				ids = final_user.findall("user_identifiers")[0]
-				id = ET.Element("user_identifier")
-				id_type = ET.SubElement(id,"id_type")
-				id_type.text = new_id_type
-				value = ET.SubElement(id,"value")
-				value.text = primary_id
-				status = ET.SubElement(id,"status")
-				status.text = "ACTIVE"
-				ids.append(id)
-				print ET.tostring(final_user)
+				final = addidentifier(final_user,primary_id,new_id_type)
+
+				print ET.tostring(final)
 				logging.info('Successful id swap for old id:' + primary_id + ', new primary: ' + new_primary)
 
 				#get
