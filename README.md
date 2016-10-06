@@ -7,7 +7,7 @@ Takes as arguemnts:
    - total number of patrons that should be updated on that call (~16 records update per minute)
    - swapids.txt
    
-####swapids.ini
+####swapids.txt
 ```
 [Params]
 apikey: apikey 
