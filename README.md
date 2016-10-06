@@ -4,7 +4,7 @@ Switches user primary ID with university ID in python
 ####swapids.py
 Takes as arguments:
    - offset value
-   - total number of patrons that should be updated on that call (~16 records update per minute)
+   - total number of patrons that should be updated on that call
    - swapids.txt
    
 ####swapids.txt
