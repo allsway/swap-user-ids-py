@@ -7,6 +7,10 @@ import logging
 import ConfigParser
 import xml.etree.ElementTree as ET
 
+
+"""
+	Creates new user_identier node, with old primary ID value
+"""
 def addidentifier(xml,primary_id,new_id_type):
 	ids = xml.findall("user_identifiers")[0]
 	id = ET.Element("user_identifier")
@@ -21,6 +25,9 @@ def addidentifier(xml,primary_id,new_id_type):
 	ids.append(id)
 	return xml	 
 	
+"""
+	Removes all user roles from the user record, so that existing issues with user roles don't prevent the user commit
+"""	
 def removeroles(patron):
 	for user_roles in patron.findall("user_roles"):
 		patron.remove(user_roles)
@@ -55,13 +62,6 @@ for i in range(0,int(total_patrons)):
 	swap = False
 	primary_id = user.find('primary_id').text
 	
-	#f = open('sonoma_users_not_updated.csv', 'rt')
-	#try:
-	#	reader = csv.reader(f)
-	#	reader.next() #skip header line
-	#	for row in reader:
-	#		if row[0] != 'end-of-file':
-	#			primary_id = row[0]
 	if len(primary_id) > 0  and not re.search('[ ;%&$#]', primary_id):
 		user_url = baseurl + '/almaws/v1/users/' + primary_id + '?apikey=' + apikey;
 		print user_url
@@ -105,9 +105,6 @@ for i in range(0,int(total_patrons)):
 			else:
 				logging.info(r.content)
 	offset += limit
-#	finally:
-#		f.close()
-	
 	
 
 
