@@ -19,8 +19,7 @@ def addidentifier(xml,primary_id,new_id_type):
 	status = ET.SubElement(id,"status")
 	status.text = "ACTIVE"
 	ids.append(id)
-	return xml
- 
+	return xml	 
 
 # Read campus parameters
 logging.basicConfig(filename='status.log',level=logging.DEBUG)
@@ -39,60 +38,62 @@ total_patrons = sys.argv[2] # always 5000
 
 
 
-
 for i in range(0,int(total_patrons)):
 	if i % limit == 0: # Now we want to increment i by 100
 		i += limit
 	url = baseurl + '/almaws/v1/users?apikey=' + apikey + '&limit=' + str(limit) + '&offset=' + str(offset) # get batch of 100 users 
 	response = requests.get(url)
-	users = ET.fromstring(response.content)
-	for user in users:
-		swap = False
-		#primary_id = user.find('primary_id').text
-		primary_id = 'bluford'
-		if len(primary_id) > 0  and not re.search('[ ;%&$#]', primary_id):
-			user_url = baseurl + '/almaws/v1/users/' + primary_id + '?apikey=' + apikey;
-			print user_url
-			response = requests.get(user_url);
-			patron = ET.fromstring(response.content)
-			for ids in patron.findall("user_identifiers"):
-				# only swap when there is one possible ID of the swap type
-				count = len(ids.findall("./user_identifier/[id_type='"+id_type_to_swap+"']"))
-				print count
-				if ids is not None and count == 1: 
-					for id in ids:
-						if id.find('id_type').text == id_type_to_swap:
-							new_primary = id.find('value').text
-							print new_primary
-							ids.remove(id)
-							swap = True
-							print (ET.tostring(ids))
-			if swap == True:
-				#put
-				headers = {"Content-Type": "application/xml"}
-				r = requests.put(user_url,data=ET.tostring(patron),headers=headers)
-				#print r.content
-				logging.info('Removed old id:' + primary_id + ', new primary: ' + new_primary)
-				#get
-				response = requests.get(user_url)
-				updated_user = ET.fromstring(response.content)
-				updated_user.find('primary_id').text = new_primary
-				#put
-				r = requests.put(user_url,data=ET.tostring(updated_user),headers=headers)
-				
-				#get 
-				new_url = baseurl + '/almaws/v1/users/' + new_primary + '?apikey=' + apikey;
-				response = requests.get(new_url)
-				final_user = ET.fromstring(response.content)
-				final = addidentifier(final_user,primary_id,new_id_type)
-				
-				print ET.tostring(final)
-				r = requests.put(new_url,data=ET.tostring(final),headers=headers)
-				print r.content
-				logging.info('Successful id swap for old id:' + primary_id + ', new primary: ' + new_primary)
-
-			
-				
+	rstatus = response.status_code
+	if rstatus == 200:
+		users = ET.fromstring(response.content)
+		for user in users:
+			swap = False
+			#primary_id = user.find('primary_id').text
+			primary_id = 'jsides'
+			if len(primary_id) > 0  and not re.search('[ ;%&$#]', primary_id):
+				user_url = baseurl + '/almaws/v1/users/' + primary_id + '?apikey=' + apikey;
+				print user_url
+				response = requests.get(user_url);
+				patron = ET.fromstring(response.content)
+				for ids in patron.findall("user_identifiers"):
+					# only swap when there is one possible ID of the swap type
+					count = len(ids.findall("./user_identifier/[id_type='"+id_type_to_swap+"']"))
+					if ids is not None and count == 1: 
+						for id in ids:
+							if id.find('id_type').text == id_type_to_swap:
+								new_primary = id.find('value').text
+								print new_primary
+								ids.remove(id)
+								swap = True
+				if swap == True:
+					#put
+					headers = {"Content-Type": "application/xml"}
+					r = requests.put(user_url,data=ET.tostring(patron),headers=headers)
+					if r.status_code == 200:
+						#get
+						response = requests.get(user_url)
+						updated_user = ET.fromstring(response.content)
+						updated_user.find('primary_id').text = new_primary
+						#put
+						r = requests.put(user_url,data=ET.tostring(updated_user),headers=headers)
+						if r.status_code == 200:
+							#get 
+							new_url = baseurl + '/almaws/v1/users/' + new_primary + '?apikey=' + apikey;
+							response = requests.get(new_url)
+							final_user = ET.fromstring(response.content)
+							final = addidentifier(final_user,primary_id,new_id_type)
+		
+							print ET.tostring(final)
+							r = requests.put(new_url,data=ET.tostring(final),headers=headers)
+							print r.content
+							logging.info('Successful id swap for old id:' + primary_id + ', new primary: ' + new_primary)
+						else:
+							logging.info('Failed to replace primary id for:' + primary_id + ', new id:' + new_primary)
+							logging.info(r.content)
+					else:
+						logging.info(r.content)
+	
+		
 
 
 
