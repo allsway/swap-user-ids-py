@@ -1,6 +1,0 @@
-[Params]
-apikey: l7xx072432bdaca44136856f8e016544fa12 
-baseurl: https://api-na.hosted.exlibrisgroup.com
-campuscode: 01CALS_SOL
-id_type_to_swap: OTHER_ID_1
-new_id_type: OTHER_ID_3
